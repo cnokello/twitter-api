@@ -3,6 +3,14 @@ import simplejson
 import json
 import nltk
 import re
+import networkx as nx
+
+def get_rt_sources(tweet):
+    rt_patterns = re.compile(r"(RT|via)((?:\b\W*@\w+)+)", re.IGNORECASE)
+    return [source.strip()
+                for tuple in rt_patterns.findall(tweet)
+                    for source in tuple 
+                         if source not in ("RT", "via")]
 
 def searchTweets(query):
     search = urllib.urlopen("http://search.twitter.com/search.json?q=" + query)
@@ -51,5 +59,26 @@ def searchTweets(query):
         if retweet:
             print retweet
 
+    # Tweets graph
+    g = nx.DiGraph()
+    for tweet in tweets_dtl:
+        rt_sources  = get_rt_sources(tweet["text"])
+        if not rt_sources: continue
+        for rt_source in rt_sources:
+            g.add_edge(rt_source, tweet["from_user"], {"tweet_id" : tweet["id"]})
+
+    # No. of nodes in the graph
+    print "\nNo.of nodes in graph is %s\n" % g.number_of_nodes()
+    # No. of edges in the graph
+    print "No. of edges in the graph is %s\n" % g.number_of_edges()
+
+    # The first edge in the graph
+    #print "The first edge in the graph is %s\n" % (g.edges(data=True)[0])
+
+    # Length of the undirected version of the graph
+    print "Length of an undirected version of the graph is %s\n" % len(nx.connected_components(g.to_undirected()))
+
+    # Degree of the graph
+    print "Degree of the graph is %s\n" % nx.degree(g)
 
 searchTweets("#ChelseaFC&rpp=500")
