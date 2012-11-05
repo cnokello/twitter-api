@@ -2,6 +2,7 @@ import urllib
 import simplejson
 import json
 import nltk
+import re
 
 def searchTweets(query):
     search = urllib.urlopen("http://search.twitter.com/search.json?q=" + query)
@@ -41,5 +42,14 @@ def searchTweets(query):
     print "Frequency Distribution: %s" % freq_dist
     print "50 most frequet terms: %s\n" % freq_dist.keys()[:50]
     print "50 least frequent terms: %s\n" % freq_dist.keys()[-50:]
+
+    # Find retweets
+    rt_patterns = re.compile(r"(RT|via)((?:\b\W*@\w+)+)", re.IGNORECASE)
+    print "Retweets: \n"
+    for t in tweets:
+        retweet = rt_patterns.findall(t)
+        if retweet:
+            print retweet
+
 
 searchTweets("#ChelseaFC&rpp=500")
