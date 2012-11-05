@@ -1,14 +1,45 @@
 import urllib
 import simplejson
 import json
+import nltk
 
 def searchTweets(query):
     search = urllib.urlopen("http://search.twitter.com/search.json?q=" + query)
     dict = simplejson.loads(search.read())
     
-    tweets = []
+    tweets_dtl = []
     for result in dict['results']:
-        tweets.append(result)
-        print "Tweet: %s\n" % result
+        tweets_dtl.append(result)
+        # print "Tweet Details: %s\n" % result
 
-searchTweets("#ChelseaFC&rpp=50")
+    print json.dumps(tweets_dtl, sort_keys = True, indent = 1)
+    tweets = [r['text'] for r in tweets_dtl]
+    
+    words = []
+    for t in tweets:
+        print "Tweet: %s\n" % t
+        # Extract all words in tweets
+        words += [w for w in t.split()]
+
+    # Length of all words
+    len_all_words = len(words)
+    print "All words is %s\n" % len_all_words
+    # Length of unique words
+    len_unique_words = len(set(words))
+    print "Unique words is %s\n" % len_unique_words
+
+    # Lexical Diversity
+    ld = 1.0 * len_unique_words / len_all_words
+    print "Lexical Diversity is %s\n" % ld
+
+    # Average words per tweet
+    awpt = 1.0 * len_all_words / len(tweets)
+    print "Average words per tweet is %s\n" % awpt
+
+    # Frequency distribution
+    freq_dist = nltk.FreqDist(words)
+    print "Frequency Distribution: %s" % freq_dist
+    print "50 most frequet terms: %s\n" % freq_dist.keys()[:50]
+    print "50 least frequent terms: %s\n" % freq_dist.keys()[-50:]
+
+searchTweets("#ChelseaFC&rpp=500")
