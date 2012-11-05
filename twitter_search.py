@@ -79,6 +79,6 @@ def searchTweets(query):
     print "Length of an undirected version of the graph is %s\n" % len(nx.connected_components(g.to_undirected()))
 
     # Degree of the graph
-    print "Degree of the graph is %s\n" % nx.degree(g)
+    print "Degree of the nodes: %s\n" % nx.degree(g)
 
 searchTweets("#ChelseaFC&rpp=500")
