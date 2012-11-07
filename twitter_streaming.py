@@ -3,9 +3,9 @@ import random
 import string
 import json
 import logging
-
-from config import Config
-from daemon import Daemon
+import config
+import time
+import mq
 
 consumer_key = ''
 consumer_secret = ''
@@ -38,7 +38,7 @@ class StreamListener(tweepy.StreamListener):
             'time': int(time.time())}
 
         logging.debug(message)
-        self.callback(json.dumps(messahe), 'posts')
+        self.tweets.mq.producer.publish(json.dumps(message), 'posts')
 
     def on_error(self, status_code):
         # When there's an error on the stream
@@ -62,8 +62,8 @@ class StreamListener(tweepy.StreamListener):
         # Set tweets class object
         self.tweets = t
 
-    def on_data(self, data):
-        logging.debug(json.dumps(data))
+    #def on_data(self, data):
+        #logging.debug(json.dumps(data))
         #print "Process received data here"
 
     def set_callback(self, callback):
@@ -76,10 +76,18 @@ class Tweets:
         # Constructor
         logging.basicConfig(level=logging.DEBUG)
         #Daemon.__init__(self, pid_file)
+        self.db = None
+        c = config.Config()
+        self.config = c.cfg
 
     def setup(self):
         # Setup DB connection, Message Queue and Twitter Listerner
+        self.setup_mq()
         self.setup_stream_listener()
+                
+    def setup_mq(self):
+        self.mq = mq.MQ()
+        self.mq.init_producer()
 
     def setup_stream_listener(self):
         # Setup twitter API streaming listener
